@@ -92,7 +92,6 @@ define(["dojo/_base/declare", "dojo/_base/lang", "esri/geometry/Point", "esri/ge
         box.style.position = "absolute";
         box.style.top = 0;
         box.style.left = 0;
-        box.style.zIndex = 9999;
         const parent = this.view.container.getElementsByClassName("esri-view-surface")[0];
         parent.appendChild(box);
         this.chart = this.echartsLib.init(box);
@@ -129,9 +128,42 @@ define(["dojo/_base/declare", "dojo/_base/lang", "esri/geometry/Point", "esri/ge
           this.chart.resize();
           this.box.hidden = false;
         }));
+        function cloneEvent(e) {
+          if (e===undefined || e===null) return undefined;
+          function ClonedEvent() {};  
+          let clone=new MouseEvent('click');
+          for (let p in e) {
+            let d=Object.getOwnPropertyDescriptor(e, p);
+            if (d && (d.get || d.set)) Object.defineProperty(clone, p, d); else clone[p] = e[p];
+          }
+          Object.setPrototypeOf(clone, e);
+          return clone;
+        }
         view.on('click', lang.hitch(this, function (e) {
-          e.target = this.chart.getRenderedCanvas()
-          this.chart.getZr().trigger('click', e.nativeEvent)
+          const old = e.native
+          let evt = new MouseEvent('click', {
+            altKey: old.altKey,
+            button: old.button,
+            buttons: old.buttons,
+            clientX: old.clientX,
+            clientY: old.clientY,
+            ctrlKey: old.ctrlKey,
+            metaKey: old.metaKey,
+            movementX: old.movementX,
+            movementY: old.movementY,
+            offsetX: old.offsetX,
+            offsetY: old.offsetY,
+            pageX: old.pageX,
+            pageY: old.pageY,
+            region: old.region,
+            screenX: old.screenX,
+            screenY: old.screenY,
+            shiftKey: old.shiftKey,
+            which: old.which,
+            x: old.x, 
+            y: old.y,
+          })
+          this.chart.getDom().getElementsByTagName('div')[0].dispatchEvent(evt)
         }))
 
       },
